@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"encoding/xml"
 	"fmt"
+	"golang.org/x/mod/semver"
 	"net/http"
 	"os"
 	"os/exec"
@@ -29,7 +30,7 @@ func NewUsecase(repos []entities.Repo) *Usc {
 	}
 }
 
-func (usc Usc) GetAssetVersions() error {
+func (usc *Usc) GetAssetVersions() error {
 	path := "obj/project.assets.json"
 	data, err := os.ReadFile(path)
 	if err != nil {
@@ -51,7 +52,7 @@ func (usc Usc) GetAssetVersions() error {
 	return nil
 }
 
-func (usc Usc) DetectDependencyFile() (string, error) {
+func (usc *Usc) DetectDependencyFile() (string, error) {
 	files := []string{
 		"go.mod", "package.json", "requirements.txt",
 		"pyproject.toml", "Gemfile", "Cargo.toml", "packages.config",
@@ -69,7 +70,7 @@ func (usc Usc) DetectDependencyFile() (string, error) {
 	return "", fmt.Errorf("no known dependency file found")
 }
 
-func (usc Usc) CheckDependencies() []string {
+func (usc *Usc) CheckDependencies() []string {
 	used := make(map[string]bool)
 	for _, dep := range usc.dependencies {
 		used[dep] = true
@@ -128,23 +129,20 @@ func (usc Usc) CheckDependencies() []string {
 	return usc.outdated
 }
 
-func (usc Usc) ParseDependencies(file string) error {
+func (usc *Usc) ParseDependencies(file string) error {
 	var err error
 	switch filepath.Base(file) {
 	case "go.mod":
-		usc.dependencies, err = usc.parseTextLines("go.mod")
+		usc.dependencies, err = usc.parseGoMod()
 		return err
 	case "package.json":
-		usc.dependencies, err = usc.parseJSONDependencies("package.json")
+		usc.dependencies, err = usc.parseJSONDependencies(file)
 		return err
 	case "requirements.txt":
-		usc.dependencies, err = usc.parseTextLines("requirements.txt")
-		return err
-	case "pyproject.toml", "Cargo.toml":
 		usc.dependencies, err = usc.parseTextLines(file)
 		return err
-	case "Gemfile":
-		usc.dependencies, err = usc.parseTextLines("Gemfile")
+	case "pyproject.toml", "Cargo.toml", "Gemfile":
+		usc.dependencies, err = usc.parseTextLines(file)
 		return err
 	case "packages.config":
 		usc.dependencies, err = usc.parsePackagesConfig(file)
@@ -158,7 +156,30 @@ func (usc Usc) ParseDependencies(file string) error {
 	return fmt.Errorf("unsupported dependency file")
 }
 
-func (usc Usc) parseTextLines(file string) ([]string, error) {
+func (usc *Usc) parseGoMod() ([]string, error) {
+	cmd := exec.Command("go", "list", "-m", "all")
+	out, err := cmd.Output()
+	if err != nil {
+		return nil, err
+	}
+	lines := strings.Split(string(out), "\n")
+	var deps []string
+	for i, line := range lines {
+		fields := strings.Fields(line)
+		if len(fields) >= 1 {
+			if i == 0 && fields[0] == "main" {
+				// первая строка — это сам модуль
+				continue
+			}
+			if fields[0] != "" {
+				deps = append(deps, fields[0])
+			}
+		}
+	}
+	return deps, nil
+}
+
+func (usc *Usc) parseTextLines(file string) ([]string, error) {
 	data, err := os.ReadFile(file)
 	if err != nil {
 		return nil, err
@@ -174,7 +195,7 @@ func (usc Usc) parseTextLines(file string) ([]string, error) {
 	return deps, nil
 }
 
-func (usc Usc) parseJSONDependencies(file string) ([]string, error) {
+func (usc *Usc) parseJSONDependencies(file string) ([]string, error) {
 	data, err := os.ReadFile(file)
 	if err != nil {
 		return nil, err
@@ -192,7 +213,7 @@ func (usc Usc) parseJSONDependencies(file string) ([]string, error) {
 	return deps, nil
 }
 
-func (usc Usc) parsePackagesConfig(file string) ([]string, error) {
+func (usc *Usc) parsePackagesConfig(file string) ([]string, error) {
 	type Package struct {
 		ID string `xml:"id,attr"`
 	}
@@ -214,7 +235,7 @@ func (usc Usc) parsePackagesConfig(file string) ([]string, error) {
 	return deps, nil
 }
 
-func (usc Usc) parseCSPROJ(file string) ([]string, error) {
+func (usc *Usc) parseCSPROJ(file string) ([]string, error) {
 	type PackageReference struct {
 		Include string `xml:"Include,attr"`
 	}
@@ -240,29 +261,39 @@ func (usc Usc) parseCSPROJ(file string) ([]string, error) {
 	return deps, nil
 }
 
-func (usc Usc) getLatestGitTag(repoURL, token string) (string, error) {
-	args := []string{"ls-remote", "--tags", repoURL}
-	cmd := exec.Command("git", args...)
+func (usc *Usc) getLatestGitTag(repoURL, token string) (string, error) {
 	if token != "" {
 		repoURL = strings.Replace(repoURL, "https://", fmt.Sprintf("https://%s@", token), 1)
-		cmd = exec.Command("git", "ls-remote", "--tags", repoURL)
 	}
+	cmd := exec.Command("git", "ls-remote", "--tags", repoURL)
 	out, err := cmd.Output()
 	if err != nil {
 		return "", err
 	}
 	lines := strings.Split(string(out), "\n")
-	var lastTag string
+	var latest string
 	for _, line := range lines {
 		if strings.Contains(line, "refs/tags/") {
 			parts := strings.Split(line, "refs/tags/")
-			lastTag = strings.TrimSpace(parts[1])
+			tag := strings.TrimSpace(parts[1])
+			// remove ^{} from annotated tags
+			tag = strings.TrimSuffix(tag, "^{}")
+			// skip non-semver tags
+			if !semver.IsValid(tag) {
+				continue
+			}
+			if latest == "" || semver.Compare(tag, latest) > 0 {
+				latest = tag
+			}
 		}
 	}
-	return lastTag, nil
+	if latest == "" {
+		return "", fmt.Errorf("no valid semver tags found")
+	}
+	return latest, nil
 }
 
-func (usc Usc) getCurrentVersion(dep string, assets map[string]string) (string, error) {
+func (usc *Usc) getCurrentVersion(dep string, assets map[string]string) (string, error) {
 	if _, err := os.Stat("go.mod"); err == nil {
 		cmd := exec.Command("go", "list", "-m", "all")
 		out, err := cmd.Output()
@@ -283,7 +314,7 @@ func (usc Usc) getCurrentVersion(dep string, assets map[string]string) (string, 
 	return "", fmt.Errorf("version for %s not found", dep)
 }
 
-func (usc Usc) usedInConfig(dep string, repos []entities.Repo) bool {
+func (usc *Usc) usedInConfig(dep string, repos []entities.Repo) bool {
 	for _, r := range repos {
 		if r.Name == dep {
 			return true
@@ -292,7 +323,7 @@ func (usc Usc) usedInConfig(dep string, repos []entities.Repo) bool {
 	return false
 }
 
-func (usc Usc) getLatestNugetVersion(pkg string) (string, error) {
+func (usc *Usc) getLatestNugetVersion(pkg string) (string, error) {
 	url := fmt.Sprintf("https://api.nuget.org/v3-flatcontainer/%s/index.json", strings.ToLower(pkg))
 	resp, err := http.Get(url)
 	if err != nil {

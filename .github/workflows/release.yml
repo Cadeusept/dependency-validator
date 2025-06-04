@@ -16,7 +16,7 @@ jobs:
         goarch: [amd64, arm]
         exclude:
           - goos: windows
-            goarch: arm # unsupported
+            goarch: arm # unsupported combination
 
     steps:
       - name: Checkout source
@@ -27,20 +27,27 @@ jobs:
         with:
           go-version: '1.22'
 
-      - name: Build binary
+      - name: Build binary and zip
         run: |
           mkdir -p dist
           output_name="myapp-${{ matrix.goos }}-${{ matrix.goarch }}"
+          binary_name="$output_name"
           if [ "${{ matrix.goos }}" = "windows" ]; then
-            output_name="${output_name}.exe"
+            binary_name="${binary_name}.exe"
           fi
-          GOOS=${{ matrix.goos }} GOARCH=${{ matrix.goarch }} go build -o "dist/${output_name}" .
 
-      - name: Upload artifacts
+          # Compile binary
+          GOOS=${{ matrix.goos }} GOARCH=${{ matrix.goarch }} go build -o "$binary_name" .
+
+          # Zip the binary
+          zip_file="dist/${output_name}.zip"
+          zip -j "$zip_file" "$binary_name"
+
+      - name: Upload zipped artifacts
         uses: actions/upload-artifact@v4
         with:
-          name: release-binaries
-          path: dist/*
+          name: release-zips
+          path: dist/*.zip
 
   release:
     name: Create GitHub Release
@@ -48,10 +55,10 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Download built artifacts
+      - name: Download zipped artifacts
         uses: actions/download-artifact@v4
         with:
-          name: release-binaries
+          name: release-zips
           path: dist
 
       - name: Create GitHub Release
@@ -59,6 +66,6 @@ jobs:
         with:
           tag_name: ${{ github.ref_name }}
           name: Release ${{ github.ref_name }}
-          files: dist/*
+          files: dist/*.zip
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

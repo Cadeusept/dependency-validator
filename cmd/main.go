@@ -6,7 +6,7 @@ import (
 	"os"
 
 	"github.com/Cadeusept/dependency-validator/internal"
-	"github.com/Cadeusept/dependency-validator/internal/usecases"
+	"github.com/Cadeusept/dependency-validator/internal/usecases/dependency_validator"
 )
 
 func main() {
@@ -15,7 +15,7 @@ func main() {
 		log.Fatalf("Failed to load .dependency-validator-config.yaml: %v", err)
 	}
 
-	dependencyValidator := usecases.NewDependencyValidator(cfg.Repos)
+	dependencyValidator := dependency_validator.NewUsecase(cfg.Repos)
 
 	depFile, err := dependencyValidator.DetectDependencyFile()
 	if err != nil {

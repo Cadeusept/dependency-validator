@@ -1,4 +1,4 @@
-package usecases
+package dependency_validator
 
 import (
 	"encoding/json"
@@ -13,15 +13,15 @@ import (
 	"github.com/Cadeusept/dependency-validator/internal/entities"
 )
 
-type DependencyValidator struct {
+type Usc struct {
 	repos         []entities.Repo
-	outdated      []string
 	dependencies  []string
 	assetVersions map[string]string
+	outdated      []string
 }
 
-func NewDependencyValidator(repos []entities.Repo) *DependencyValidator {
-	return &DependencyValidator{
+func NewUsecase(repos []entities.Repo) *Usc {
+	return &Usc{
 		repos:         repos,
 		outdated:      make([]string, 0),
 		assetVersions: make(map[string]string),
@@ -29,7 +29,7 @@ func NewDependencyValidator(repos []entities.Repo) *DependencyValidator {
 	}
 }
 
-func (usc DependencyValidator) GetAssetVersions() error {
+func (usc Usc) GetAssetVersions() error {
 	path := "obj/project.assets.json"
 	data, err := os.ReadFile(path)
 	if err != nil {
@@ -51,7 +51,7 @@ func (usc DependencyValidator) GetAssetVersions() error {
 	return nil
 }
 
-func (usc DependencyValidator) DetectDependencyFile() (string, error) {
+func (usc Usc) DetectDependencyFile() (string, error) {
 	files := []string{
 		"go.mod", "package.json", "requirements.txt",
 		"pyproject.toml", "Gemfile", "Cargo.toml", "packages.config",
@@ -69,7 +69,7 @@ func (usc DependencyValidator) DetectDependencyFile() (string, error) {
 	return "", fmt.Errorf("no known dependency file found")
 }
 
-func (usc DependencyValidator) CheckDependencies() []string {
+func (usc Usc) CheckDependencies() []string {
 	used := make(map[string]bool)
 	for _, dep := range usc.dependencies {
 		used[dep] = true
@@ -128,7 +128,7 @@ func (usc DependencyValidator) CheckDependencies() []string {
 	return usc.outdated
 }
 
-func (usc DependencyValidator) ParseDependencies(file string) error {
+func (usc Usc) ParseDependencies(file string) error {
 	var err error
 	switch filepath.Base(file) {
 	case "go.mod":
@@ -158,7 +158,7 @@ func (usc DependencyValidator) ParseDependencies(file string) error {
 	return fmt.Errorf("unsupported dependency file")
 }
 
-func (usc DependencyValidator) parseTextLines(file string) ([]string, error) {
+func (usc Usc) parseTextLines(file string) ([]string, error) {
 	data, err := os.ReadFile(file)
 	if err != nil {
 		return nil, err
@@ -174,7 +174,7 @@ func (usc DependencyValidator) parseTextLines(file string) ([]string, error) {
 	return deps, nil
 }
 
-func (usc DependencyValidator) parseJSONDependencies(file string) ([]string, error) {
+func (usc Usc) parseJSONDependencies(file string) ([]string, error) {
 	data, err := os.ReadFile(file)
 	if err != nil {
 		return nil, err
@@ -192,7 +192,7 @@ func (usc DependencyValidator) parseJSONDependencies(file string) ([]string, err
 	return deps, nil
 }
 
-func (usc DependencyValidator) parsePackagesConfig(file string) ([]string, error) {
+func (usc Usc) parsePackagesConfig(file string) ([]string, error) {
 	type Package struct {
 		ID string `xml:"id,attr"`
 	}
@@ -214,7 +214,7 @@ func (usc DependencyValidator) parsePackagesConfig(file string) ([]string, error
 	return deps, nil
 }
 
-func (usc DependencyValidator) parseCSPROJ(file string) ([]string, error) {
+func (usc Usc) parseCSPROJ(file string) ([]string, error) {
 	type PackageReference struct {
 		Include string `xml:"Include,attr"`
 	}
@@ -240,7 +240,7 @@ func (usc DependencyValidator) parseCSPROJ(file string) ([]string, error) {
 	return deps, nil
 }
 
-func (usc DependencyValidator) getLatestGitTag(repoURL, token string) (string, error) {
+func (usc Usc) getLatestGitTag(repoURL, token string) (string, error) {
 	args := []string{"ls-remote", "--tags", repoURL}
 	cmd := exec.Command("git", args...)
 	if token != "" {
@@ -262,7 +262,7 @@ func (usc DependencyValidator) getLatestGitTag(repoURL, token string) (string, e
 	return lastTag, nil
 }
 
-func (usc DependencyValidator) getCurrentVersion(dep string, assets map[string]string) (string, error) {
+func (usc Usc) getCurrentVersion(dep string, assets map[string]string) (string, error) {
 	if _, err := os.Stat("go.mod"); err == nil {
 		cmd := exec.Command("go", "list", "-m", "all")
 		out, err := cmd.Output()
@@ -283,7 +283,7 @@ func (usc DependencyValidator) getCurrentVersion(dep string, assets map[string]s
 	return "", fmt.Errorf("version for %s not found", dep)
 }
 
-func (usc DependencyValidator) usedInConfig(dep string, repos []entities.Repo) bool {
+func (usc Usc) usedInConfig(dep string, repos []entities.Repo) bool {
 	for _, r := range repos {
 		if r.Name == dep {
 			return true
@@ -292,7 +292,7 @@ func (usc DependencyValidator) usedInConfig(dep string, repos []entities.Repo) b
 	return false
 }
 
-func (usc DependencyValidator) getLatestNugetVersion(pkg string) (string, error) {
+func (usc Usc) getLatestNugetVersion(pkg string) (string, error) {
 	url := fmt.Sprintf("https://api.nuget.org/v3-flatcontainer/%s/index.json", strings.ToLower(pkg))
 	resp, err := http.Get(url)
 	if err != nil {

@@ -3,59 +3,54 @@ name: Build and Release
 on:
   push:
     tags:
-      - 'v*' # e.g., v1.0.0
+      - 'v*'  # triggers on version tags like v1.0.0
 
 jobs:
   build:
-    name: Build Binaries
     runs-on: ubuntu-latest
-
     strategy:
       matrix:
         goos: [linux, windows]
         goarch: [amd64, arm]
         exclude:
           - goos: windows
-            goarch: arm # unsupported combination
+            goarch: arm  # unsupported combo
 
     steps:
-      - name: Checkout source
+      - name: Checkout source code
         uses: actions/checkout@v4
 
-      - name: Set up Go
+      - name: Set up Go 1.24.1
         uses: actions/setup-go@v5
         with:
-          go-version: '1.24.1'
+          go-version: 1.24.1
 
-      - name: Build binary and zip
+      - name: Build binary and create zip
         run: |
           mkdir -p dist
-          output_name="myapp-${{ matrix.goos }}-${{ matrix.goarch }}"
+          output_name="dependency-validator-${{ matrix.goos }}-${{ matrix.goarch }}"
           binary_name="$output_name"
           if [ "${{ matrix.goos }}" = "windows" ]; then
             binary_name="${binary_name}.exe"
           fi
 
-          # Compile binary
-          GOOS=${{ matrix.goos }} GOARCH=${{ matrix.goarch }} go build -o "$binary_name" .
+          # Build the binary (replace '.' if your main code is in a subfolder)
+          GOOS=${{ matrix.goos }} GOARCH=${{ matrix.goarch }} go build -o "$binary_name" ./cmd/main.go
 
-          # Zip the binary
-          zip_file="dist/${output_name}.zip"
-          zip -j "$zip_file" "$binary_name"
+          # Zip the binary into dist/
+          zip -j "dist/${output_name}.zip" "$binary_name"
 
-      - name: Upload zipped artifacts
+      - name: Upload zipped binaries
         uses: actions/upload-artifact@v4
         with:
           name: release-zips
           path: dist/*.zip
 
   release:
-    name: Create GitHub Release
     needs: build
     runs-on: ubuntu-latest
-
     steps:
-      - name: Download zipped artifacts
+      - name: Download zipped binaries
         uses: actions/download-artifact@v4
         with:
           name: release-zips
@@ -68,4 +63,4 @@ jobs:
           name: Release ${{ github.ref_name }}
           files: dist/*.zip
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.TOKEN }}

@@ -14,6 +14,8 @@ import (
 	"github.com/Cadeusept/dependency-validator/internal/entities"
 )
 
+var execCommand = exec.Command
+
 type Usc struct {
 	repos         []entities.Repo
 	dependencies  []string
@@ -157,7 +159,7 @@ func (usc *Usc) ParseDependencies(file string) error {
 }
 
 func (usc *Usc) parseGoMod() ([]string, error) {
-	cmd := exec.Command("go", "list", "-m", "all")
+	cmd := execCommand("go", "list", "-m", "all")
 	out, err := cmd.Output()
 	if err != nil {
 		return nil, err
@@ -168,8 +170,7 @@ func (usc *Usc) parseGoMod() ([]string, error) {
 		fields := strings.Fields(line)
 		if len(fields) >= 1 {
 			if i == 0 && fields[0] == "main" {
-				// первая строка — это сам модуль
-				continue
+				continue // skip main module line
 			}
 			if fields[0] != "" {
 				deps = append(deps, fields[0])

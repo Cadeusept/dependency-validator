@@ -2,9 +2,11 @@ name: Go CI
 
 on:
   push:
-    branches: [master]
+    branches:
+      - main
   pull_request:
-    branches: [master]
+    branches:
+      - main
 
 jobs:
   build-test-lint:
@@ -17,10 +19,7 @@ jobs:
       - name: Set up Go environment
         uses: actions/setup-go@v4
         with:
-          go-version: '1.24.1'
-
-      - name: Print Go version
-        run: go version
+          go-version: '1.20'  # или нужная версия
 
       - name: Cache Go modules
         uses: actions/cache@v3
@@ -32,10 +31,9 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-go-
 
-      - name: Install golangci-lint v1.64.6
+      - name: Install golangci-lint
         run: |
-          curl -sSfL https://github.com/golangci/golangci-lint/releases/download/v1.64.6/golangci-lint-1.64.6-linux-amd64.tar.gz | tar -xz
-          sudo mv golangci-lint-1.64.6-linux-amd64/golangci-lint /usr/local/bin/
+          curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh | sh -s -- -b $(go env GOPATH)/bin v1.52.2
 
       - name: Run golangci-lint
         run: golangci-lint run ./...

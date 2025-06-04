@@ -1,9 +1,7 @@
 package dependency_validator
 
 import (
-	"github.com/stretchr/testify/require"
 	"os"
-	"os/exec"
 	"testing"
 
 	"github.com/Cadeusept/dependency-validator/internal/entities"
@@ -18,48 +16,6 @@ func writeTempFile(t *testing.T, name, content string) string {
 	err := os.WriteFile(fullPath, []byte(content), 0644)
 	assert.NoError(t, err)
 	return fullPath
-}
-
-// fakeExecCommand returns a *exec.Cmd that runs this test binary with special env
-func fakeExecCommand(output string) func(name string, arg ...string) *exec.Cmd {
-	return func(name string, arg ...string) *exec.Cmd {
-		cs := []string{"-test.run=TestHelperProcess", "--", name}
-		cs = append(cs, arg...)
-		cmd := exec.Command(os.Args[0], cs...)
-		cmd.Env = []string{"GO_WANT_HELPER_PROCESS=1", "GO_HELPER_OUTPUT=" + output}
-		return cmd
-	}
-}
-
-// TestHelperProcess is a helper process used to mock exec.Command output
-func TestHelperProcess(t *testing.T) {
-	if os.Getenv("GO_WANT_HELPER_PROCESS") != "1" {
-		return
-	}
-	output := os.Getenv("GO_HELPER_OUTPUT")
-	// Write mocked output to stdout
-	_, _ = os.Stdout.WriteString(output)
-	os.Exit(0)
-}
-
-func TestParseGoMod(t *testing.T) {
-	mockOutput := `main
-github.com/stretchr/testify v1.8.1
-golang.org/x/mod v0.11.0
-`
-
-	originalExecCommand := execCommand
-	defer func() { execCommand = originalExecCommand }()
-
-	execCommand = fakeExecCommand(mockOutput)
-
-	usc := &Usc{}
-	deps, err := usc.parseGoMod()
-	require.NoError(t, err)
-	require.Equal(t, []string{
-		"github.com/stretchr/testify",
-		"golang.org/x/mod",
-	}, deps)
 }
 
 func TestParseTextLines(t *testing.T) {

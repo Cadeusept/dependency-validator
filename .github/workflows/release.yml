@@ -40,11 +40,11 @@ jobs:
           # Zip the binary into dist/
           zip -j "dist/${output_name}.zip" "$binary_name"
 
-      - name: Upload zipped binaries
+      - name: Upload zipped binary
         uses: actions/upload-artifact@v4
         with:
-          name: release-zips
-          path: dist/*.zip
+          name: release-${{ matrix.goos }}-${{ matrix.goarch }}
+          path: dist/dependency-validator-${{ matrix.goos }}-${{ matrix.goarch }}.zip
 
   release:
     needs: build
@@ -53,7 +53,19 @@ jobs:
       - name: Download zipped binaries
         uses: actions/download-artifact@v4
         with:
-          name: release-zips
+          name: release-linux-amd64
+          path: dist
+
+      - name: Download zipped binaries (windows amd64)
+        uses: actions/download-artifact@v4
+        with:
+          name: release-windows-amd64
+          path: dist
+
+      - name: Download zipped binaries (linux arm)
+        uses: actions/download-artifact@v4
+        with:
+          name: release-linux-arm
           path: dist
 
       - name: Create GitHub Release

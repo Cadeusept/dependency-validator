@@ -4,7 +4,7 @@ import (
 	"os"
 
 	"github.com/Cadeusept/dependency-validator/internal/entities"
-	"gopkg.in/yaml.v2"
+	yaml "gopkg.in/yaml.v2"
 )
 
 type Config struct {

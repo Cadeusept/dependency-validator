@@ -96,37 +96,88 @@ func TestParseJSONDependencies(t *testing.T) {
 	assert.ElementsMatch(t, []string{"express", "axios"}, deps)
 }
 
-func TestParsePackagesConfig(t *testing.T) {
-	content := `
-<packages>
-	<package id="Newtonsoft.Json" version="13.0.1" />
-	<package id="Serilog" version="2.10.0" />
-</packages>
-`
-	path := writeTempFile(t, "packages.config", content)
+//func TestParsePackagesConfig(t *testing.T) {
+//	content := `
+//<packages>
+//	<package id="Newtonsoft.Json" version="13.0.1" />
+//	<package id="Serilog" version="2.10.0" />
+//</packages>
+//`
+//	path := writeTempFile(t, "packages.config", content)
+//
+//	validator := Usc{}
+//	deps, err := validator.parsePackagesConfig(path)
+//
+//	assert.NoError(t, err)
+//	assert.ElementsMatch(t, []string{"Newtonsoft.Json", "Serilog"}, deps)
+//}
+//
+//func TestParseCSPROJ(t *testing.T) {
+//	content := `
+//<Project Sdk="Microsoft.NET.Sdk">
+//  <ItemGroup>
+//    <PackageReference Include="NUnit" Version="3.13.2" />
+//    <PackageReference Include="Moq" Version="4.16.1" />
+//  </ItemGroup>
+//</Project>`
+//	path := writeTempFile(t, "project.csproj", content)
+//
+//	validator := Usc{}
+//	deps, err := validator.parseCSPROJ(path)
+//
+//	assert.NoError(t, err)
+//	assert.ElementsMatch(t, []string{"NUnit", "Moq"}, deps)
+//}
 
-	validator := Usc{}
-	deps, err := validator.parsePackagesConfig(path)
+func TestParsePackagesConfig(t *testing.T) {
+	xml := `
+<packages>
+  <package id="Newtonsoft.Json" version="13.0.1" />
+  <package id="NUnit" version="3.13.2" />
+</packages>`
+
+	file := writeTempFile(t, "packages.config", xml)
+
+	usc := &Usc{}
+	deps, err := usc.parsePackagesConfig(file)
 
 	assert.NoError(t, err)
-	assert.ElementsMatch(t, []string{"Newtonsoft.Json", "Serilog"}, deps)
+	assert.ElementsMatch(t, []string{"Newtonsoft.Json", "NUnit"}, deps)
 }
 
 func TestParseCSPROJ(t *testing.T) {
-	content := `
+	xml := `
 <Project Sdk="Microsoft.NET.Sdk">
   <ItemGroup>
-    <PackageReference Include="NUnit" Version="3.13.2" />
-    <PackageReference Include="Moq" Version="4.16.1" />
+    <PackageReference Include="Serilog" Version="2.10.0" />
+    <PackageReference Include="AutoMapper" Version="10.1.1" />
   </ItemGroup>
 </Project>`
-	path := writeTempFile(t, "project.csproj", content)
 
-	validator := Usc{}
-	deps, err := validator.parseCSPROJ(path)
+	file := writeTempFile(t, "project.csproj", xml)
+
+	usc := &Usc{}
+	deps, err := usc.parseCSPROJ(file)
 
 	assert.NoError(t, err)
-	assert.ElementsMatch(t, []string{"NUnit", "Moq"}, deps)
+	assert.ElementsMatch(t, []string{"Serilog", "AutoMapper"}, deps)
+}
+
+func TestParsePackagesConfig_InvalidXML(t *testing.T) {
+	invalidXML := `<packages><package id="OnlyOne"`
+	file := writeTempFile(t, "broken.config", invalidXML)
+
+	usc := &Usc{}
+	_, err := usc.parsePackagesConfig(file)
+
+	assert.Error(t, err)
+}
+
+func TestParseCSPROJ_FileNotFound(t *testing.T) {
+	usc := &Usc{}
+	_, err := usc.parseCSPROJ("nonexistent.csproj")
+
+	assert.Error(t, err)
 }
 
 func TestUsedInConfig(t *testing.T) {

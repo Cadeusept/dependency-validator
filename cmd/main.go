@@ -2,11 +2,10 @@ package main
 
 import (
 	"fmt"
-	"log"
-	"os"
-
 	"github.com/Cadeusept/dependency-validator/internal"
 	"github.com/Cadeusept/dependency-validator/internal/usecases/dependency_validator"
+	"log"
+	"os"
 )
 
 func main() {
@@ -17,15 +16,16 @@ func main() {
 
 	dependencyValidator := dependency_validator.NewUsecase(cfg.Repos)
 
-	depFile, err := dependencyValidator.DetectDependencyFile()
+	sbomPath, err := dependencyValidator.DetectSBOM(".")
 	if err != nil {
-		log.Fatalf("Dependency file not found: %v", err)
+		log.Fatalf("Error detecting SBoM: %v\n", err)
 	}
-	fmt.Printf("Detected dependency file: %s\n", depFile)
 
-	err = dependencyValidator.ParseDependencies(depFile)
+	fmt.Printf("Found SBoM file: %s\n", sbomPath)
+
+	err = dependencyValidator.ParseSBOM(sbomPath)
 	if err != nil {
-		log.Fatalf("Failed to parse dependencies: %v", err)
+		log.Fatalf("Failed to parse SBoM: %v", err)
 	}
 
 	_ = dependencyValidator.GetAssetVersions()
@@ -33,13 +33,14 @@ func main() {
 	outdated := dependencyValidator.CheckDependencies()
 
 	if len(outdated) > 0 {
-		fmt.Println("\nThe following dependencies are outdated:")
+		fmt.Println("\n" + internal.TextColorRed + "The following dependencies are outdated:")
 		for _, msg := range outdated {
 			fmt.Println(" - " + msg)
 		}
+		fmt.Print(internal.TextColorReset)
 		os.Exit(1)
 	}
 
-	fmt.Println("\nAll dependencies are up to date.")
+	fmt.Println("\n" + internal.TextColorGreen + "All dependencies are up to date." + internal.TextColorReset)
 	os.Exit(0)
 }

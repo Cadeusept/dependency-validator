@@ -34,18 +34,32 @@ Modern projects drown in dependencies. **Dependency Validator** helps you:
 
 ---
 
+## 🚨Dependencies
+
+### To use tool you need anchore/syft to be installed
+
+```bash
+curl -sSfL https://raw.githubusercontent.com/anchore/syft/main/install.sh | sh -s -- -b /usr/local/bin
+```
+
+### And SBoM generated in CycloneDX format:
+
+```bash
+syft *your project root path* --output cyclonedx-json=bom.json
+```
+
 ## 📦 Installation
 
 ### Using Go
 
 ```bash
-go install github.com/yourusername/dependency-vali
+go install github.com/Cadeusept/dependency-validator
 ```
 
 ### Or build manually
 
 ```bash
-git clone https://github.com/yourusername/dependency-validator.git
+git clone https://github.com/Cadeusept/dependency-validator.git
 cd dependency-validator
 go build -o dependency-validator ./cmd/main.go
 ```

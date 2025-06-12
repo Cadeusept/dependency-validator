@@ -11,6 +11,8 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
+var execCommand = exec.Command
+
 // Test fixtures
 const (
 	testCycloneDXSBOM = `{

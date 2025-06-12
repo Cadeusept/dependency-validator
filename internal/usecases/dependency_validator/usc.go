@@ -14,8 +14,6 @@ import (
 	"github.com/Cadeusept/dependency-validator/internal/entities"
 )
 
-var execCommand = exec.Command
-
 type Usc struct {
 	repos        []entities.Repo
 	dependencies *entities.SBOM
@@ -188,37 +186,7 @@ func (usc *Usc) getLatestGitTag(repoURL, token string) (string, error) {
 	return latest, nil
 }
 
-func (usc *Usc) getCurrentVersion(dep string, assets map[string]string) (string, error) {
-	if _, err := os.Stat("go.mod"); err == nil {
-		cmd := exec.Command("go", "list", "-m", "all")
-		out, err := cmd.Output()
-		if err != nil {
-			return "", err
-		}
-		for _, line := range strings.Split(string(out), "\n") {
-			if strings.HasPrefix(line, dep+" ") {
-				return strings.Fields(line)[1], nil
-			}
-		}
-	}
-
-	if v, ok := assets[dep]; ok {
-		return v, nil
-	}
-
-	return "", fmt.Errorf("version for %s not found", dep)
-}
-
-func (usc *Usc) usedInConfig(dep string, repos []entities.Repo) bool {
-	for _, r := range repos {
-		if r.Name == dep {
-			return true
-		}
-	}
-	return false
-}
-
-func (usc *Usc) getLatestNugetVersion(pkg string) (string, error) {
+func (usc *Usc) getLatestNugetVersion(pkg string) (string, error) { //nolint
 	url := fmt.Sprintf("https://api.nuget.org/v3-flatcontainer/%s/index.json", strings.ToLower(pkg))
 	resp, err := http.Get(url)
 	if err != nil {

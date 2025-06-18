@@ -45,7 +45,7 @@ curl -sSfL https://raw.githubusercontent.com/anchore/syft/main/install.sh | sh -
 ### And SBoM generated in CycloneDX format:
 
 ```bash
-syft *your project root path* --output cyclonedx-json=bom.json
+syft *your-project-root-path* --output cyclonedx-json=bom.json
 ```
 
 ## 📦 Installation
@@ -143,6 +143,12 @@ jobs:
 
       - name: Install dependency-validator
         run: go install github.com/Cadeusept/dependency-validator@latest
+        
+      - name: Install syft (https://github.com/anchore/syft/blob/main/README.md)
+        run: curl -sSfL https://raw.githubusercontent.com/anchore/syft/main/install.sh | sh -s -- -b /usr/local/bin
+        
+      - name: Create SBoM file
+        run: syft *your-project-root-path* --output cyclonedx-json=bom.json
 
       - name: Run validator
         run: dependency-validator

@@ -18,6 +18,8 @@ jobs:
         exclude:
           - goos: windows
             goarch: arm  # unsupported combo
+          - goos: darwin
+            goarch: arm
 
     steps:
       - name: Checkout source code

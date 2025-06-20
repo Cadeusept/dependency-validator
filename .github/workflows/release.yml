@@ -17,7 +17,7 @@ jobs:
         goarch: [amd64, arm]
         exclude:
           - goos: windows
-            goarch: arm  # unsupported combo
+            goarch: arm  # unsupported combos
           - goos: darwin
             goarch: arm
 
@@ -30,7 +30,7 @@ jobs:
         with:
           go-version: 1.24.1
 
-      - name: Build binary and create zip
+      - name: Build and zip binary
         run: |
           mkdir -p dist
           output_name="dependency-validator-${{ matrix.goos }}-${{ matrix.goarch }}"
@@ -39,38 +39,25 @@ jobs:
             binary_name="${binary_name}.exe"
           fi
 
-          # Build the binary (replace '.' if your main code is in a subfolder)
           GOOS=${{ matrix.goos }} GOARCH=${{ matrix.goarch }} go build -o "$binary_name" ./cmd/main.go
-
-          # Zip the binary into dist/
           zip -j "dist/${output_name}.zip" "$binary_name"
 
-      - name: Upload zipped binary
+      - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
-          name: release-${{ matrix.goos }}-${{ matrix.goarch }}
-          path: dist/dependency-validator-${{ matrix.goos }}-${{ matrix.goarch }}.zip
+          name: "release-${{ matrix.goos }}-${{ matrix.goarch }}"
+          path: dist/*.zip
+          if-no-files-found: warn
 
   release:
+    name: Release
     needs: build
     runs-on: ubuntu-latest
+
     steps:
-      - name: Download zipped binaries
+      - name: Download all artifacts
         uses: actions/download-artifact@v4
         with:
-          name: release-linux-amd64
-          path: dist
-
-      - name: Download zipped binaries (windows amd64)
-        uses: actions/download-artifact@v4
-        with:
-          name: release-windows-amd64
-          path: dist
-
-      - name: Download zipped binaries (linux arm)
-        uses: actions/download-artifact@v4
-        with:
-          name: release-linux-arm
           path: dist
 
       - name: Create GitHub Release
@@ -78,6 +65,6 @@ jobs:
         with:
           tag_name: ${{ github.ref_name }}
           name: Release ${{ github.ref_name }}
-          files: dist/*.zip
+          files: dist/**/*.zip
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

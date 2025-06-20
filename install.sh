@@ -49,6 +49,7 @@ echo "📦 Extracting..."
 unzip -q "$ZIP_PATH" -d "$TMP_DIR"
 
 # Find the binary file (first non-zip file with exec permission or no extension)
+
 BIN_CANDIDATE=$(find "$TMP_DIR" -maxdepth 1 -type f ! -name "*.zip" | head -n 1)
 
 if [ ! -x "$BIN_CANDIDATE" ]; then

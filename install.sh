@@ -64,4 +64,4 @@ mv "$BIN_CANDIDATE" "$INSTALL_DIR/${PROJECT_NAME}"
 chmod +x "$INSTALL_DIR/${PROJECT_NAME}"
 
 echo "✅ Installed to ${INSTALL_DIR}/${PROJECT_NAME}"
-"$INSTALL_DIR/${PROJECT_NAME}" --version || true
+"${PROJECT_NAME}" --version || true

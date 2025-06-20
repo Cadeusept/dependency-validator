@@ -59,7 +59,7 @@ if [ ! -f "$BIN_CANDIDATE" ]; then
   exit 1
 fi
 
-echo "📁 Installing to $INSTALL_DIR..."
+echo "📁 Installing $BIN_CANDIDATE to $INSTALL_DIR..."
 mv "$BIN_CANDIDATE" "$INSTALL_DIR/${PROJECT_NAME}"
 chmod +x "$INSTALL_DIR/${PROJECT_NAME}"
 

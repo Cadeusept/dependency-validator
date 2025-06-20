@@ -11,15 +11,13 @@ INSTALL_DIR="${2:-/usr/local/bin}"
 OS="$(uname | tr '[:upper:]' '[:lower:]')"
 ARCH="$(uname -m)"
 
-# Normalize architecture
 case "$ARCH" in
   x86_64) ARCH="amd64" ;;
   aarch64) ARCH="arm64" ;;
   armv7l) ARCH="arm" ;;
-  *) echo "Unsupported architecture: $ARCH"; exit 1 ;;
+  *) echo "❌ Unsupported architecture: $ARCH"; exit 1 ;;
 esac
 
-# Construct asset filename
 ASSET_NAME="${PROJECT_NAME}-${OS}-${ARCH}.zip"
 echo "➡️  Installing ${PROJECT_NAME} for ${OS}-${ARCH}..."
 
@@ -30,7 +28,6 @@ else
   API_URL="https://api.github.com/repos/${REPO}/releases/tags/${VERSION}"
 fi
 
-# Extract download URL for the correct asset
 DOWNLOAD_URL=$(curl -sL "$API_URL" \
   | grep "browser_download_url" \
   | grep "$ASSET_NAME" \
@@ -41,7 +38,6 @@ if [ -z "$DOWNLOAD_URL" ]; then
   exit 1
 fi
 
-# Download and extract binary
 TMP_DIR="$(mktemp -d)"
 ZIP_PATH="${TMP_DIR}/${ASSET_NAME}"
 
@@ -51,16 +47,21 @@ curl -sL "$DOWNLOAD_URL" -o "$ZIP_PATH"
 echo "📦 Extracting..."
 unzip -q "$ZIP_PATH" -d "$TMP_DIR"
 
-# Install binary
-BIN_PATH="${TMP_DIR}/${PROJECT_NAME}"
-if [ ! -f "$BIN_PATH" ]; then
+# Find the binary file (first non-zip file with exec permission or no extension)
+BIN_CANDIDATE=$(find "$TMP_DIR" -maxdepth 1 -type f ! -name "*.zip" | head -n 1)
+
+if [ ! -x "$BIN_CANDIDATE" ]; then
+  chmod +x "$BIN_CANDIDATE" 2>/dev/null || true
+fi
+
+if [ ! -f "$BIN_CANDIDATE" ]; then
   echo "❌ Binary not found inside zip file"
   exit 1
 fi
 
 echo "📁 Installing to $INSTALL_DIR..."
-chmod +x "$BIN_PATH"
-sudo mv "$BIN_PATH" "$INSTALL_DIR/${PROJECT_NAME}"
+sudo mv "$BIN_CANDIDATE" "$INSTALL_DIR/${PROJECT_NAME}"
+chmod +x "$INSTALL_DIR/${PROJECT_NAME}"
 
 echo "✅ Installed ${PROJECT_NAME} to ${INSTALL_DIR}"
-"${INSTALL_DIR}/${PROJECT_NAME}" --version || true
+"$INSTALL_DIR/${PROJECT_NAME}" --version || true

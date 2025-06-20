@@ -5,7 +5,7 @@ set -euo pipefail
 REPO="Cadeusept/dependency-validator"
 PROJECT_NAME="dependency-validator"
 VERSION="${1:-latest}"
-INSTALL_DIR="${2:-/usr/bin}"
+INSTALL_DIR="${2:-/usr/local/bin}"
 
 # Detect OS and architecture
 OS="$(uname | tr '[:upper:]' '[:lower:]')"
@@ -66,4 +66,3 @@ mv "$BIN_CANDIDATE" "$INSTALL_DIR/${PROJECT_NAME}"
 chmod +x "$INSTALL_DIR/${PROJECT_NAME}"
 
 echo "✅ Installed to ${INSTALL_DIR}/${PROJECT_NAME}"
-"${PROJECT_NAME}" --version || true

@@ -49,7 +49,8 @@ echo "📦 Extracting..."
 unzip -q "$ZIP_PATH" -d "$TMP_DIR"
 
 # Find the binary file (first non-zip file with exec permission or no extension)
-BIN_CANDIDATE=${PROJECT_NAME}-${OS}-${ARCH}
+
+BIN_CANDIDATE=$(find "$TMP_DIR" -maxdepth 1 -type f ! -name "*.zip" | head -n 1)
 
 if [ ! -x "$BIN_CANDIDATE" ]; then
   chmod +x "$BIN_CANDIDATE" 2>/dev/null || true

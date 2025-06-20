@@ -2,59 +2,65 @@
 set -euo pipefail
 
 # === CONFIGURATION ===
+REPO="Cadeusept/dependency-validator"
+PROJECT_NAME="dependency-validator"
 VERSION="${1:-latest}"
 INSTALL_DIR="${2:-/usr/local/bin}"
-PROJECT_NAME="dependency-validator"
-REPO="Cadeusept/dependency-validator"
 
-# Determine OS and Arch
-OS=$(uname | tr '[:upper:]' '[:lower:]')
-ARCH=$(uname -m)
+# Detect OS and architecture
+OS="$(uname | tr '[:upper:]' '[:lower:]')"
+ARCH="$(uname -m)"
+
+# Normalize architecture
 case "$ARCH" in
   x86_64) ARCH="amd64" ;;
   aarch64) ARCH="arm64" ;;
-  armv7*) ARCH="arm" ;;
+  armv7l) ARCH="arm" ;;
   *) echo "Unsupported architecture: $ARCH"; exit 1 ;;
 esac
 
-# Construct asset name
+# Construct asset filename
 ASSET_NAME="${PROJECT_NAME}-${OS}-${ARCH}.zip"
-echo "Looking for release asset: $ASSET_NAME"
+echo "➡️  Installing ${PROJECT_NAME} for ${OS}-${ARCH}..."
 
-# GitHub API URL
-API="https://api.github.com/repos/$REPO/releases"
+# Fetch release metadata
 if [ "$VERSION" = "latest" ]; then
-  URL="$API/latest"
+  API_URL="https://api.github.com/repos/${REPO}/releases/latest"
 else
-  URL="$API/tags/$VERSION"
+  API_URL="https://api.github.com/repos/${REPO}/releases/tags/${VERSION}"
 fi
 
-# Fetch download URL
-DOWNLOAD_URL=$(curl -sL "$URL" \
+# Extract download URL for the correct asset
+DOWNLOAD_URL=$(curl -sL "$API_URL" \
   | grep "browser_download_url" \
-  | grep "\"$ASSET_NAME\"" \
-  | cut -d '"' -f4)
+  | grep "$ASSET_NAME" \
+  | cut -d '"' -f 4)
 
 if [ -z "$DOWNLOAD_URL" ]; then
-  echo "❌ Error: asset $ASSET_NAME not found for release $VERSION"
+  echo "❌ Could not find asset: $ASSET_NAME in release $VERSION"
   exit 1
 fi
 
-echo "Downloading $DOWNLOAD_URL..."
-TMP="$(mktemp -d)"
-ZIP_PATH="$TMP/$ASSET_NAME"
+# Download and extract binary
+TMP_DIR="$(mktemp -d)"
+ZIP_PATH="${TMP_DIR}/${ASSET_NAME}"
+
+echo "⬇️  Downloading $ASSET_NAME..."
 curl -sL "$DOWNLOAD_URL" -o "$ZIP_PATH"
 
-echo "Unzipping..."
-unzip -q "$ZIP_PATH" -d "$TMP"
+echo "📦 Extracting..."
+unzip -q "$ZIP_PATH" -d "$TMP_DIR"
 
-BIN_PATH="$TMP/$PROJECT_NAME"
-if [ ! -x "$BIN_PATH" ]; then
-  echo "❌ Error: $PROJECT_NAME binary not found in zip"
+# Install binary
+BIN_PATH="${TMP_DIR}/${PROJECT_NAME}"
+if [ ! -f "$BIN_PATH" ]; then
+  echo "❌ Binary not found inside zip file"
   exit 1
 fi
 
-echo "Installing to $INSTALL_DIR..."
-sudo install -m 0755 "$BIN_PATH" "$INSTALL_DIR/$PROJECT_NAME"
+echo "📁 Installing to $INSTALL_DIR..."
+chmod +x "$BIN_PATH"
+sudo mv "$BIN_PATH" "$INSTALL_DIR/${PROJECT_NAME}"
 
-echo "✅ Installed $PROJECT_NAME $("$INSTALL_DIR/$PROJECT_NAME" version)"
+echo "✅ Installed ${PROJECT_NAME} to ${INSTALL_DIR}"
+"${INSTALL_DIR}/${PROJECT_NAME}" --version || true

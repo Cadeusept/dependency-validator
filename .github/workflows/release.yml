@@ -55,10 +55,16 @@ jobs:
     needs: build
     runs-on: ubuntu-latest
     steps:
-      - name: Download zipped binaries
+      - name: Download zipped binaries (linux amd64)
         uses: actions/download-artifact@v4
         with:
           name: release-linux-amd64
+          path: dist
+
+      - name: Download zipped binaries (darwin amd64)
+        uses: actions/download-artifact@v4
+        with:
+          name: release-darwin-amd64
           path: dist
 
       - name: Download zipped binaries (windows amd64)

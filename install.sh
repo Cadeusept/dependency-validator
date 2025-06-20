@@ -60,7 +60,7 @@ if [ ! -f "$BIN_CANDIDATE" ]; then
 fi
 
 echo "📁 Installing to $INSTALL_DIR..."
-sudo mv "$BIN_CANDIDATE" "$INSTALL_DIR/${PROJECT_NAME}"
+mv "$BIN_CANDIDATE" "$INSTALL_DIR/${PROJECT_NAME}"
 chmod +x "$INSTALL_DIR/${PROJECT_NAME}"
 
 echo "✅ Installed ${PROJECT_NAME} to ${INSTALL_DIR}"

@@ -14,12 +14,10 @@ jobs:
     strategy:
       matrix:
         goos: [linux, windows, darwin]
-        goarch: [amd64, arm]
+        goarch: [amd64, arm64]
         exclude:
           - goos: windows
-            goarch: arm  # unsupported combos
-          - goos: darwin
-            goarch: arm
+            goarch: arm64  # unsupported combos
 
     steps:
       - name: Checkout source code
@@ -30,7 +28,7 @@ jobs:
         with:
           go-version: 1.24.1
 
-      - name: Build and zip binary
+      - name: Build and create tar.gz archive
         run: |
           mkdir -p dist
           output_name="dependency-validator-${{ matrix.goos }}-${{ matrix.goarch }}"
@@ -39,14 +37,27 @@ jobs:
             binary_name="${binary_name}.exe"
           fi
 
+          # Build the binary
           GOOS=${{ matrix.goos }} GOARCH=${{ matrix.goarch }} go build -o "$binary_name" ./cmd/main.go
-          zip -j "dist/${output_name}.zip" "$binary_name"
+          
+          # Create tar.gz archive
+          tar -czf "dist/${output_name}.tar.gz" "$binary_name"
+          
+          # Clean up
+          rm "$binary_name"
+
+      - name: Generate checksums
+        run: |
+          cd dist
+          for f in *.tar.gz; do
+            sha256sum "$f" > "$f.sha256"
+          done
 
       - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
           name: "release-${{ matrix.goos }}-${{ matrix.goarch }}"
-          path: dist/*.zip
+          path: dist/*.tar.gz
           if-no-files-found: warn
 
   release:
@@ -65,6 +76,6 @@ jobs:
         with:
           tag_name: ${{ github.ref_name }}
           name: Release ${{ github.ref_name }}
-          files: dist/**/*.zip
+          files: dist/**/*.tar.gz
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

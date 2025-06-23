@@ -37,27 +37,35 @@ jobs:
             binary_name="${binary_name}.exe"
           fi
 
-          # Build the binary
-          GOOS=${{ matrix.goos }} GOARCH=${{ matrix.goarch }} go build -o "$binary_name" ./cmd/main.go
-          
-          # Create tar.gz archive
-          tar -czf "dist/${output_name}.tar.gz" "$binary_name"
-          
-          # Clean up
-          rm "$binary_name"
+          # Special flags for Linux static builds
+          if [ "${{ matrix.goos }}" = "linux" ]; then
+            echo "🔧 Building static Linux binary..."
+            CGO_ENABLED=0 GOOS=linux GOARCH=${{ matrix.goarch }} \
+              go build -a -installsuffix cgo -ldflags='-extldflags "-static"' \
+              -o "$binary_name" ./cmd/main.go
+          else
+            echo "🔧 Building regular binary for ${{ matrix.goos }}..."
+            GOOS=${{ matrix.goos }} GOARCH=${{ matrix.goarch }} \
+              go build -o "$binary_name" ./cmd/main.go
+          fi
 
-      - name: Generate checksums
-        run: |
-          cd dist
-          for f in *.tar.gz; do
-            sha256sum "$f" > "$f.sha256"
-          done
+          # Create checksum
+          sha256sum "$binary_name" > "$binary_name.sha256"
+
+          # Create tar.gz archive
+          echo "📦 Creating archive..."
+          tar -czf "dist/${output_name}.tar.gz" "$binary_name" "$binary_name.sha256"
+
+          # Clean up
+          rm "$binary_name" "$binary_name.sha256"
 
       - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
           name: "release-${{ matrix.goos }}-${{ matrix.goarch }}"
-          path: dist/*.tar.gz
+          path: |
+            dist/*.tar.gz
+            dist/*.sha256
           if-no-files-found: warn
 
   release:
@@ -76,6 +84,8 @@ jobs:
         with:
           tag_name: ${{ github.ref_name }}
           name: Release ${{ github.ref_name }}
-          files: dist/**/*.tar.gz
+          files: |
+            dist/**/*.tar.gz
+            dist/**/*.sha256
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

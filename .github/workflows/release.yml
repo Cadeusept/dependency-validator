@@ -32,7 +32,7 @@ jobs:
         run: |
           mkdir -p dist
           output_name="dependency-validator-${{ matrix.goos }}-${{ matrix.goarch }}"
-          binary_name="$output_name"
+          binary_name="dependency-validator"
           if [ "${{ matrix.goos }}" = "windows" ]; then
             binary_name="${binary_name}.exe"
           fi

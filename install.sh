@@ -62,7 +62,7 @@ if [ ! -f "$BIN_CANDIDATE" ]; then
 fi
 
 echo "📁 Renaming $BIN_CANDIDATE to ${PROJECT_NAME}..."
-mv "$BIN_CANDIDATE" "${PROJECT_NAME}"
-chmod +x "$INSTALL_DIR/${PROJECT_NAME}"
+mv "$BIN_CANDIDATE" "./${PROJECT_NAME}"
+chmod +x "./${PROJECT_NAME}"
 
 echo "✅ Installed to ./${PROJECT_NAME}"

@@ -5,7 +5,7 @@ set -euo pipefail
 REPO="Cadeusept/dependency-validator"
 PROJECT_NAME="dependency-validator"
 VERSION="${1:-latest}"
-INSTALL_DIR="${2:-/usr/local/bin}"
+INSTALL_DIR="${2:-/usr/bin}"
 
 # Detect OS and architecture
 OS="$(uname | tr '[:upper:]' '[:lower:]')"
@@ -61,8 +61,8 @@ if [ ! -f "$BIN_CANDIDATE" ]; then
   exit 1
 fi
 
-echo "📁 Renaming $BIN_CANDIDATE to ${PROJECT_NAME}..."
-mv "$BIN_CANDIDATE" "./${PROJECT_NAME}"
-chmod +x "./${PROJECT_NAME}"
+echo "📁 Installing $BIN_CANDIDATE to $INSTALL_DIR..."
+mv -v "$BIN_CANDIDATE" "$INSTALL_DIR/${PROJECT_NAME}"
+chmod +x "$INSTALL_DIR/${PROJECT_NAME}"
 
-echo "✅ Installed to ./${PROJECT_NAME}"
+echo "✅ Installed to ${INSTALL_DIR}/${PROJECT_NAME}"

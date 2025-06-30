@@ -50,10 +50,10 @@ syft *your-project-root-path* --output cyclonedx-json=bom.json
 
 ## 📦 Installation
 
-### Using Go
+### Using install script
 
 ```bash
-go install github.com/Cadeusept/dependency-validator
+curl -sSfL https://raw.githubusercontent.com/Cadeusept/dependency-validator/master/install.sh | sh
 ```
 
 ### Or build manually
@@ -142,7 +142,7 @@ jobs:
           go-version: '1.21'
 
       - name: Install dependency-validator
-        run: go install github.com/Cadeusept/dependency-validator@latest
+        run: curl -sSfL https://raw.githubusercontent.com/Cadeusept/dependency-validator/master/install.sh | sh
         
       - name: Install syft (https://github.com/anchore/syft/blob/main/README.md)
         run: curl -sSfL https://raw.githubusercontent.com/anchore/syft/main/install.sh | sh -s -- -b /usr/local/bin

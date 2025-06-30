@@ -84,7 +84,11 @@ repos:
     repo_url: https://github.com/pedroalbanese/kuznechik 
 
   - name: github.com/stretchr/testify
-    repo_url: https://github.com/stretchr/testify 
+    repo_url: https://github.com/stretchr/testify
+
+  - name: gitlab.com/private_username/private_repo
+    repo_url: https://gitlab.com/private_username/private_repo
+    token: your_private_repo_token
 ```
 
 ---

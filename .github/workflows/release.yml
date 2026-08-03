@@ -42,11 +42,11 @@ jobs:
             echo "🔧 Building static Linux binary..."
             CGO_ENABLED=0 GOOS=linux GOARCH=${{ matrix.goarch }} \
               go build -a -installsuffix cgo -ldflags='-extldflags "-static"' \
-              -o "$binary_name" ./cmd/main.go
+              -o "$binary_name" .
           else
             echo "🔧 Building regular binary for ${{ matrix.goos }}..."
             GOOS=${{ matrix.goos }} GOARCH=${{ matrix.goarch }} \
-              go build -o "$binary_name" ./cmd/main.go
+              go build -o "$binary_name" .
           fi
 
           # Create checksum
@@ -54,7 +54,7 @@ jobs:
 
           # Create tar.gz archive
           echo "📦 Creating archive..."
-          tar -czf "dist/${output_name}.tar.gz" "$binary_name" "$binary_name.sha256"
+          tar -czf "dist/${output_name}.tar.gz" "$binary_name" "$binary_name.sha256" LICENSE
 
           # Clean up
           rm "$binary_name" "$binary_name.sha256"

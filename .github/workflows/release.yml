@@ -54,7 +54,7 @@ jobs:
 
           # Create tar.gz archive
           echo "📦 Creating archive..."
-          tar -czf "dist/${output_name}.tar.gz" "$binary_name" "$binary_name.sha256" LICENSE
+          tar -czf "dist/${output_name}.tar.gz" "$binary_name" "$binary_name.sha256" LICENSE NOTICE
 
           # Clean up
           rm "$binary_name" "$binary_name.sha256"

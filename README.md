@@ -1,10 +1,28 @@
-# Dependency Validator
+<div align="center">
+  <h1>Dependency Validator</h1>
+  <p><strong>Keep CycloneDX dependencies aligned with the latest semantic Git tags.</strong></p>
 
-[![Go Reference](https://pkg.go.dev/badge/github.com/Cadeusept/dependency-validator.svg)](https://pkg.go.dev/github.com/Cadeusept/dependency-validator)
-[![Go CI](https://github.com/Cadeusept/dependency-validator/actions/workflows/go.yml/badge.svg?branch=master)](https://github.com/Cadeusept/dependency-validator/actions/workflows/go.yml)
-[![GitHub release](https://img.shields.io/github/v/release/Cadeusept/dependency-validator?sort=semver)](https://github.com/Cadeusept/dependency-validator/releases/latest)
-[![Go version](https://img.shields.io/github/go-mod/go-version/Cadeusept/dependency-validator)](go.mod)
-[![License: BSD-3-Clause](https://img.shields.io/badge/license-BSD--3--Clause-blue.svg)](LICENSE)
+  <a href="https://go.dev/"><img src="https://img.shields.io/badge/Go-1.26.4-00ADD8?logo=go&amp;logoColor=white" alt="Go 1.26.4"></a>
+  <a href="https://cyclonedx.org/"><img src="https://img.shields.io/badge/SBOM-CycloneDX-6A4C93?logo=owasp&amp;logoColor=white" alt="CycloneDX SBOM"></a>
+  <a href="https://github.com/anchore/syft"><img src="https://img.shields.io/badge/Generated_with-Syft-623CE4?logo=github&amp;logoColor=white" alt="Generated with Syft"></a>
+  <a href="https://git-scm.com/"><img src="https://img.shields.io/badge/Versions-Git_tags-F05032?logo=git&amp;logoColor=white" alt="Git tag versions"></a>
+  <a href="https://github.com/Cadeusept"><img src="https://img.shields.io/badge/Author-Cadeusept-8B9AFF?logo=github&amp;logoColor=white" alt="Author: Cadeusept"></a>
+</div>
+
+<div align="center">
+  <a href="https://github.com/Cadeusept/dependency-validator"><img src="https://img.shields.io/github/repo-size/Cadeusept/dependency-validator" alt="Repository size"></a>
+  <a href="https://github.com/Cadeusept/dependency-validator/commits/master"><img src="https://img.shields.io/github/last-commit/Cadeusept/dependency-validator/master" alt="Last commit"></a>
+  <a href="https://github.com/Cadeusept/dependency-validator/commits/master"><img src="https://img.shields.io/github/commit-activity/m/Cadeusept/dependency-validator" alt="Monthly commit activity"></a>
+  <a href="https://github.com/Cadeusept/dependency-validator/pulls"><img src="https://img.shields.io/github/issues-pr/Cadeusept/dependency-validator" alt="Open pull requests"></a>
+  <a href="https://github.com/Cadeusept/dependency-validator/graphs/contributors"><img src="https://img.shields.io/github/contributors/Cadeusept/dependency-validator" alt="Contributors"></a>
+</div>
+
+<div align="center">
+  <a href="https://github.com/Cadeusept/dependency-validator/actions/workflows/go.yml"><img src="https://github.com/Cadeusept/dependency-validator/actions/workflows/go.yml/badge.svg?branch=master" alt="Go CI"></a>
+  <a href="https://pkg.go.dev/github.com/Cadeusept/dependency-validator"><img src="https://pkg.go.dev/badge/github.com/Cadeusept/dependency-validator.svg" alt="Go Reference"></a>
+  <a href="https://github.com/Cadeusept/dependency-validator/releases/latest"><img src="https://img.shields.io/github/v/release/Cadeusept/dependency-validator?sort=semver" alt="Latest release"></a>
+  <a href="LICENSE"><img src="https://img.shields.io/badge/license-Apache--2.0-D22128?logo=apache&amp;logoColor=white" alt="Apache 2.0 license"></a>
+</div>
 
 Dependency Validator is a command-line utility that compares dependencies in a
 [CycloneDX](https://cyclonedx.org/) software bill of materials (SBOM) with the
@@ -147,12 +165,19 @@ jobs:
 
 ## Contributing
 
-Bug reports and pull requests are welcome. Please use
-[GitHub Issues](https://github.com/Cadeusept/dependency-validator/issues) for
-questions and proposals.
+Bug reports and pull requests are welcome. Read the
+[Contributing Guide](CONTRIBUTING.md) before opening a pull request, and follow
+the [Code of Conduct](CODE_OF_CONDUCT.md) in all project spaces.
+
+## Security
+
+Please report vulnerabilities privately according to the
+[Security Policy](SECURITY.md). Do not disclose security-sensitive details in a
+public issue.
 
 ## License
 
-Dependency Validator is available under the [BSD 3-Clause License](LICENSE).
-You may use, modify, and redistribute it, provided that the copyright and
-license notices naming the author are retained as required by the license.
+Dependency Validator is available under the
+[Apache License 2.0](LICENSE). You may use, modify, and redistribute it under
+the license terms. Redistributions must preserve the applicable copyright and
+attribution notices in [NOTICE](NOTICE).

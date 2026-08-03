@@ -17,6 +17,9 @@ func LoadConfig(path string) (Config, error) {
 	if err != nil {
 		return cfg, err
 	}
+
+	data = []byte(os.ExpandEnv(string(data)))
+
 	err = yaml.Unmarshal(data, &cfg)
 	return cfg, err
 }

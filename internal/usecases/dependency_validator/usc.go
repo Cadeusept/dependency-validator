@@ -192,7 +192,7 @@ func (usc *Usc) getLatestNugetVersion(pkg string) (string, error) { //nolint
 	if err != nil {
 		return "", err
 	}
-	defer resp.Body.Close()
+	defer resp.Body.Close() //nolint:errcheck: i dont care
 
 	if resp.StatusCode != 200 {
 		return "", fmt.Errorf("NuGet package %s not found", pkg)

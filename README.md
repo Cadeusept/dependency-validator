@@ -57,6 +57,12 @@ Install the latest tagged version with Go:
 go install github.com/Cadeusept/dependency-validator@latest
 ```
 
+Alternatively, use the installation script:
+
+```bash
+curl -sSfL https://raw.githubusercontent.com/Cadeusept/dependency-validator/master/install.sh | sh
+```
+
 Prebuilt archives are available on the
 [GitHub Releases page](https://github.com/Cadeusept/dependency-validator/releases).
 
@@ -80,6 +86,10 @@ repos:
   - name: github.com/stretchr/testify
     repo_url: https://github.com/stretchr/testify
     token: ${GITHUB_TOKEN}
+
+  - name: gitlab.com/private_username/private_repo
+    repo_url: https://gitlab.com/private_username/private_repo
+    token: ${GITLAB_TOKEN}
 ```
 
 `name` must match the component name in the SBOM. `repo_url` must be a Git

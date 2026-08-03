@@ -4,7 +4,7 @@ import (
 	"os"
 
 	"github.com/Cadeusept/dependency-validator/internal/entities"
-	yaml "gopkg.in/yaml.v2"
+	"gopkg.in/yaml.v2"
 )
 
 type Config struct {
@@ -17,6 +17,9 @@ func LoadConfig(path string) (Config, error) {
 	if err != nil {
 		return cfg, err
 	}
+
+	data = []byte(os.ExpandEnv(string(data)))
+
 	err = yaml.Unmarshal(data, &cfg)
 	return cfg, err
 }

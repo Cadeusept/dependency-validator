@@ -1,11 +1,14 @@
+// Command dependency-validator compares dependencies in a CycloneDX SBOM with
+// the latest semantic-version tags published by their source repositories.
 package main
 
 import (
 	"fmt"
-	"github.com/Cadeusept/dependency-validator/internal"
-	"github.com/Cadeusept/dependency-validator/internal/usecases/dependency_validator"
 	"log"
 	"os"
+
+	"github.com/Cadeusept/dependency-validator/internal"
+	"github.com/Cadeusept/dependency-validator/internal/usecases/dependency_validator"
 )
 
 func main() {

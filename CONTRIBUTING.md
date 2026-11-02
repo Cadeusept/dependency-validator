@@ -20,7 +20,7 @@ Security vulnerabilities must be reported according to the
 
 ## Development Setup
 
-Dependency Validator requires Go 1.26.4 or newer.
+Dependency Validator requires Go 1.26.10 or newer.
 
 ```bash
 git clone https://github.com/Cadeusept/dependency-validator.git

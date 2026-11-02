@@ -2,7 +2,7 @@
   <h1>Dependency Validator</h1>
   <p><strong>Keep CycloneDX dependencies aligned with the latest semantic Git tags.</strong></p>
 
-  <a href="https://go.dev/"><img src="https://img.shields.io/badge/Go-1.26.4-00ADD8?logo=go&amp;logoColor=white" alt="Go 1.26.4"></a>
+  <a href="https://go.dev/"><img src="https://img.shields.io/badge/Go-1.26.10-00ADD8?logo=go&amp;logoColor=white" alt="Go 1.26.10"></a>
   <a href="https://cyclonedx.org/"><img src="https://img.shields.io/badge/SBOM-CycloneDX-6A4C93?logo=owasp&amp;logoColor=white" alt="CycloneDX SBOM"></a>
   <a href="https://github.com/anchore/syft"><img src="https://img.shields.io/badge/Generated_with-Syft-623CE4?logo=github&amp;logoColor=white" alt="Generated with Syft"></a>
   <a href="https://git-scm.com/"><img src="https://img.shields.io/badge/Versions-Git_tags-F05032?logo=git&amp;logoColor=white" alt="Git tag versions"></a>
@@ -47,7 +47,7 @@ present in the SBOM but absent from the configuration are ignored.
 - Git, used to read remote repository tags.
 - A CycloneDX JSON SBOM. [Syft](https://github.com/anchore/syft) is the
   recommended generator.
-- Go 1.26.4 or newer when installing or building from source.
+- Go 1.26.10 or newer when installing or building from source.
 
 ## Installation
 
@@ -148,7 +148,7 @@ jobs:
 
       - uses: actions/setup-go@v5
         with:
-          go-version: '1.26.4'
+          go-version: '1.26.10'
 
       - name: Install Dependency Validator
         run: go install github.com/Cadeusept/dependency-validator@latest

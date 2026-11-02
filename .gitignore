@@ -1,3 +1,5 @@
 /main
 /.dependency-validator-config.yaml
 /bom.json
+*.out
+/.idea
